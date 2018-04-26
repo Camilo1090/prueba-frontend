@@ -4,7 +4,6 @@ import * as Datamap from 'datamaps';
 import * as d3 from 'd3';
 
 import { GeosportsService } from "../services/geosports.service";
-import {ActivatedRoute} from "@angular/router";
 
 @Component({
   selector: 'app-map',
@@ -14,7 +13,7 @@ import {ActivatedRoute} from "@angular/router";
 export class MapComponent implements OnInit, AfterViewInit {
   @ViewChild('mapContainer') mapContainer: ElementRef;
 
-  params = [];
+  params = {};
   map: any;
 
   selectedSex = 'All';
@@ -123,15 +122,15 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   updateParams(): void {
-    this.params = [];
+    this.params = {};
     // sex param
     switch (this.selectedSex) {
       case 'Female': {
-        this.params.push({ name: 'sex', value: 'female' });
+        this.params['sex'] = 'female';
         break;
       }
       case 'Male': {
-        this.params.push({ name: 'sex', value: 'male' });
+        this.params['sex'] = 'male';
         break;
       }
       default: {

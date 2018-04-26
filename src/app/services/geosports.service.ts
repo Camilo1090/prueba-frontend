@@ -9,13 +9,9 @@ export class GeosportsService {
 
   constructor(private httpClient: HttpClient) { }
 
-  public count(params: any[]): Observable<any[]> {
+  public count(params: any): Observable<any[]> {
     const url = this.baseURL + '/count';
-    let httpParams = new HttpParams();
-
-    for (let i = 0; i < params.length; i++) {
-      httpParams = httpParams.append(params[i].name, params[i].value);
-    }
+    let httpParams = new HttpParams({ fromObject: params });
 
     return this.httpClient.get<any[]>(url, { params: httpParams });
   }
