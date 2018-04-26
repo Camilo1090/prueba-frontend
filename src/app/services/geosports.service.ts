@@ -14,7 +14,7 @@ export class GeosportsService {
     let httpParams = new HttpParams();
 
     for (let i = 0; i < params.length; i++) {
-      httpParams.set(params[i].name, params[i].value);
+      httpParams = httpParams.append(params[i].name, params[i].value);
     }
 
     return this.httpClient.get<any[]>(url, { params: httpParams });

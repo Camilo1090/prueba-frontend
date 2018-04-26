@@ -14,6 +14,16 @@ import {ActivatedRoute} from "@angular/router";
 export class MapComponent implements OnInit, AfterViewInit {
   @ViewChild('mapContainer') mapContainer: ElementRef;
 
+  params = [];
+  map: any;
+
+  selectedSex = 'All';
+  sexValues = [
+    'All',
+    'Female',
+    'Male'
+  ];
+
   constructor(public geosportsService: GeosportsService,
               public _loadingService: TdLoadingService) { }
 
@@ -24,18 +34,63 @@ export class MapComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     // this.drawMap();
     this.registerLoading();
-    this.updateMap();
+    this.firstMapRender();
   }
 
-  updateMap(): void {
-    let params = [];
-    this.geosportsService.count(params).subscribe(response => {
+  firstMapRender(): void {
+    this.geosportsService.count(this.params).subscribe(response => {
       this.drawMap(response);
       this.resolveLoading();
     });
   }
 
+  updateMap(): void {
+    this.geosportsService.count(this.params).subscribe(response => {
+      this.updateMapData(response);
+      this.resolveLoading();
+    });
+  }
+
   drawMap(rawData: any[] = []): void {
+    const dataset = this.parseRawData(rawData);
+
+    const that = this;
+    this.map = new Datamap({
+      element: that.mapContainer.nativeElement,
+      projection: 'mercator',
+      responsive: true,
+      fills: {
+        defaultFill: "#F5F5F5"
+      },
+      data: dataset,
+      geographyConfig: {
+        borderColor: '#DEDEDE',
+        highlightBorderWidth: 2,
+        // don't change color on mouse hover
+        highlightFillColor: (geo) => {
+          return geo['fillColor'] || '#F5F5F5';
+        },
+        // only change border
+        highlightBorderColor: '#B7B7B7',
+        // show desired information in tooltip
+        popupTemplate: (geo, data) => {
+          // tooltip content
+          return `<div class="hoverinfo">
+            <strong> ${geo.properties.name} </strong>
+            <br>Users: <strong> ${data.count} </strong>
+            </div>`;
+        }
+      }
+    });
+  }
+
+  updateMapData(rawData: any[]): void {
+    const dataset = this.parseRawData(rawData);
+
+    this.map.updateChoropleth(dataset);
+  }
+
+  parseRawData(rawData: any[]): any {
     // Datamaps expect data in format:
     // { "USA": { "fillColor": "#42a844", count: 75},
     //   "FRA": { "fillColor": "#8dc386", count: 43 } }
@@ -64,34 +119,31 @@ export class MapComponent implements OnInit, AfterViewInit {
       dataset[iso] = { count: value, fillColor: paletteScale(value) };
     });
 
-    const that = this;
-    const map = new Datamap({
-      element: that.mapContainer.nativeElement,
-      projection: 'mercator',
-      responsive: true,
-      fills: {
-        defaultFill: "#F5F5F5"
-      },
-      data: dataset,
-      geographyConfig: {
-        borderColor: '#DEDEDE',
-        highlightBorderWidth: 2,
-        // don't change color on mouse hover
-        highlightFillColor: (geo) => {
-          return geo['fillColor'] || '#F5F5F5';
-        },
-        // only change border
-        highlightBorderColor: '#B7B7B7',
-        // show desired information in tooltip
-        popupTemplate: (geo, data) => {
-          // tooltip content
-          return `<div class="hoverinfo">
-            <strong> ${geo.properties.name} </strong>
-            <br>Users: <strong> ${data.count} </strong>
-            </div>`;
-        }
+    return dataset;
+  }
+
+  updateParams(): void {
+    this.params = [];
+    // sex param
+    switch (this.selectedSex) {
+      case 'Female': {
+        this.params.push({ name: 'sex', value: 'female' });
+        break;
       }
-    });
+      case 'Male': {
+        this.params.push({ name: 'sex', value: 'male' });
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  }
+
+  onSexChanged(): void {
+    this.registerLoading();
+    this.updateParams();
+    this.updateMap();
   }
 
   // Methods for the loading
