@@ -1,13 +1,23 @@
 <div layout="row" layout-align="center center" class="pad-md">
   <div layout="column" class="pad-right-md">
-    <button mat-raised-button color="accent">Button</button>
-  </div>
-  <div layout="column">
     <mat-radio-group class="example-radio-group" [(ngModel)]="selectedSex" (change)="onSexChanged()">
-      <mat-radio-button class="example-radio-button pad-right-xs" *ngFor="let sex of sexValues" [value]="sex">
+      <mat-radio-button class="example-radio-button pad-right-sm" *ngFor="let sex of sexValues" [value]="sex">
         {{sex}}
       </mat-radio-button>
     </mat-radio-group>
+  </div>
+  <div layout="column" class="pad-right-md">
+    <div layout="row">
+      <mat-form-field class="pad-right-sm">
+        <input matInput placeholder="Minimum Age" (keyup)="emitMinAge($event)" type="number" [(ngModel)]="minAge">
+      </mat-form-field>
+      <mat-form-field>
+        <input matInput placeholder="Maximum Age" (keyup)="emitMaxAge($event)" type="number" [(ngModel)]="maxAge">
+      </mat-form-field>
+    </div>
+  </div>
+  <div layout="column">
+    <button mat-raised-button color="accent" (click)="resetFilters()">Reset Filters</button>
   </div>
 </div>
 <div layout="row" layout-align="center">

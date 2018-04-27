@@ -1,9 +1,13 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { TdLoadingService } from "@covalent/core";
 import * as Datamap from 'datamaps';
 import * as d3 from 'd3';
 
 import { GeosportsService } from "../services/geosports.service";
+import { Observable } from "rxjs/Observable";
+import 'rxjs/add/operator/distinctUntilChanged';
+import 'rxjs/add/operator/debounceTime';
+import { MatInput } from "@angular/material";
 
 @Component({
   selector: 'app-map',
@@ -12,6 +16,8 @@ import { GeosportsService } from "../services/geosports.service";
 })
 export class MapComponent implements OnInit, AfterViewInit {
   @ViewChild('mapContainer') mapContainer: ElementRef;
+  @ViewChild('minAgeInput') minAgeInput: ElementRef;
+  @ViewChild('maxAgeInput') maxAgeInput: MatInput;
 
   params = {};
   map: any;
@@ -23,11 +29,24 @@ export class MapComponent implements OnInit, AfterViewInit {
     'Male'
   ];
 
+  minAge: number;
+  maxAge: number;
+
   constructor(public geosportsService: GeosportsService,
               public _loadingService: TdLoadingService) { }
 
   ngOnInit() {
-    // this.registerLoading();
+    //subscribe to receive changes, with 300ms debounce
+    this.minAgeChanges(300).subscribe(value => {
+      // this.minAge = Number(value);
+      this.updateParams();
+      this.updateMap();
+    });
+    this.maxAgeChanges(300).subscribe(value => {
+      // this.maxAge = Number(value);
+      this.updateParams();
+      this.updateMap();
+    });
   }
 
   ngAfterViewInit() {
@@ -137,10 +156,52 @@ export class MapComponent implements OnInit, AfterViewInit {
         break;
       }
     }
+    // min age param
+    if (this.minAge)
+      this.params['age.gte'] = this.minAge;
+    // max age param
+    if (this.maxAge)
+      this.params['age.lte'] = this.maxAge;
   }
 
   onSexChanged(): void {
     this.registerLoading();
+    this.updateParams();
+    this.updateMap();
+  }
+
+  emitMinAge: (event: KeyboardEvent) => void;
+  emitMaxAge: (event: KeyboardEvent) => void;
+
+  // returns an Observable that emits whenever emitInput() is called
+  minAgeChanges(debounce: number): Observable<string> {
+    return Observable.create(observer => {
+      // setup emitInput() to forward values to the subscriber
+      this.emitMinAge = (event:KeyboardEvent) => {
+        observer.next((<HTMLInputElement>event.target).value)
+      }
+    }).distinctUntilChanged().debounceTime(debounce);
+  }
+
+  // returns an Observable that emits whenever emitInput() is called
+  maxAgeChanges(debounce: number): Observable<string> {
+    return Observable.create(observer => {
+      // setup emitInput() to forward values to the subscriber
+      this.emitMaxAge = (event:KeyboardEvent) => {
+        observer.next((<HTMLInputElement>event.target).value)
+      }
+    }).distinctUntilChanged().debounceTime(debounce);
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event): void {
+    this.map.resize();
+  }
+
+  resetFilters(): void {
+    this.minAge = undefined;
+    this.maxAge = undefined;
+    this.selectedSex = 'All';
     this.updateParams();
     this.updateMap();
   }
