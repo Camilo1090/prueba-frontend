@@ -20,6 +20,7 @@
     <button mat-raised-button color="accent" (click)="resetFilters()">Reset Filters</button>
   </div>
 </div>
-<div layout="row" layout-align="center">
+<div layout="row" layout-align="center"
+     *tdLoading="'map'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
   <div id="map-container" #mapContainer class="map-container"></div>
 </div>
