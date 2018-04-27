@@ -49,27 +49,30 @@ export class MapComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     // this.drawMap();
     this.registerLoading();
-    this.firstMapRender();
+    // this.firstMapRender();
+    this.updateMap();
   }
 
   // first render of the map
-  firstMapRender(): void {
-    this.geosportsService.count(this.params).subscribe(response => {
-      this.drawMap(response);
-      this.resolveLoading();
-    });
-  }
+  // firstMapRender(): void {
+  //   this.geosportsService.count(this.params).subscribe(response => {
+  //     this.drawMap(response);
+  //     this.resolveLoading();
+  //   });
+  // }
 
   // retrieves server data with params and updates map data
   updateMap(): void {
     this.geosportsService.count(this.params).subscribe(response => {
-      this.updateMapData(response);
+      // this.updateMapData(response);
+      this.drawMap(response);
       this.resolveLoading();
     });
   }
 
   // initially draws the map
   drawMap(rawData: any[] = []): void {
+    document.getElementById('map-container').innerHTML = '';
     const dataset = this.parseRawData(rawData);
 
     const that = this;
