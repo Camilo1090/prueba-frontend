@@ -7,7 +7,6 @@ import { GeosportsService } from "../services/geosports.service";
 import { Observable } from "rxjs/Observable";
 import 'rxjs/add/operator/distinctUntilChanged';
 import 'rxjs/add/operator/debounceTime';
-import { MatInput } from "@angular/material";
 
 @Component({
   selector: 'app-map',
@@ -16,8 +15,6 @@ import { MatInput } from "@angular/material";
 })
 export class MapComponent implements OnInit, AfterViewInit {
   @ViewChild('mapContainer') mapContainer: ElementRef;
-  @ViewChild('minAgeInput') minAgeInput: ElementRef;
-  @ViewChild('maxAgeInput') maxAgeInput: MatInput;
 
   params = {};
   map: any;
@@ -55,6 +52,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     this.firstMapRender();
   }
 
+  // first render of the map
   firstMapRender(): void {
     this.geosportsService.count(this.params).subscribe(response => {
       this.drawMap(response);
@@ -62,6 +60,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // retrieves server data with params and updates map data
   updateMap(): void {
     this.geosportsService.count(this.params).subscribe(response => {
       this.updateMapData(response);
@@ -69,6 +68,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // initially draws the map
   drawMap(rawData: any[] = []): void {
     const dataset = this.parseRawData(rawData);
 
@@ -102,12 +102,15 @@ export class MapComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // updates the data used by the map
   updateMapData(rawData: any[]): void {
     const dataset = this.parseRawData(rawData);
 
     this.map.updateChoropleth(dataset);
   }
 
+  // generates a data object from server retrieved data
+  // that can be interpreted by the Datamaps library
   parseRawData(rawData: any[]): any {
     // Datamaps expect data in format:
     // { "USA": { "fillColor": "#42a844", count: 75},
@@ -140,6 +143,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     return dataset;
   }
 
+  // updates the params object with the entered filters
   updateParams(): void {
     this.params = {};
     // sex param
@@ -164,6 +168,7 @@ export class MapComponent implements OnInit, AfterViewInit {
       this.params['age.lte'] = this.maxAge;
   }
 
+  // function to handle the change of selected radio button of the sex button group
   onSexChanged(): void {
     this.registerLoading();
     this.updateParams();
@@ -193,11 +198,13 @@ export class MapComponent implements OnInit, AfterViewInit {
     }).distinctUntilChanged().debounceTime(debounce);
   }
 
+  // window listener to resize the map on window resize
   @HostListener('window:resize', ['$event'])
   onResize(event): void {
     this.map.resize();
   }
 
+  // function to reset the filters to default value
   resetFilters(): void {
     this.minAge = undefined;
     this.maxAge = undefined;
